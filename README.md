@@ -71,13 +71,11 @@ Pull requests are welcome! For major changes, please open an issue first to disc
 4. Push to the branch (`git push origin feature/YourFeature`)
 5. Open a pull request
 
-## License
-[MIT](LICENSE)
 
 ## Contact
 - **Author:** Anaranyo Sarkar
 - **Email:** anaranyo2705@gmail.com
-- **GitHub:** [yourusername](https://github.com/yourusername)
+- **GitHub:** [anaronic]([https://github.com/anaronic])
 
 ---
 
