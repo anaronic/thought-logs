@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ThoughtLogs.</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body class="dark-mode">
+    <!-- Floating Particles Container -->
+    <div class="particles-container" id="particlesContainer"></div>
+    
+    <div class="app-container">
+        <!-- Header -->
+        <div class="header">
+            <div class="header-bg-overlay"></div>
+            <h1 class="header-title">ThoughtLogs.</h1>
+        </div>
+        
+        <!-- Left Column: Future Self + Cognitive Load -->
+        <div class="side-column" id="leftColumn">
+            <div id="futureSelfWidget" class="widget-card">
+                <div class="widget-header">🔮 Future Self Predictor</div>
+                <div class="widget-content">
+                    <div class="future-self-summary" id="futureSelfSummary">Analyzing...</div>
+                    <div class="future-self-horizon" id="futureSelfHorizon"></div>
+                    <div class="future-self-insights">
+                        <div class="insights-section">
+                            <h4>📈 Predicted Trends</h4>
+                            <ul id="futureSelfTrends"></ul>
+                        </div>
+                        <div class="insights-section">
+                            <h4>⚠️ Risk Factors</h4>
+                            <ul id="futureSelfRisks"></ul>
+                        </div>
+                        <div class="insights-section">
+                            <h4>🌟 Positive Outcomes</h4>
+                            <ul id="futureSelfPositives"></ul>
+                        </div>
+                        <div class="insights-section">
+                            <h4>💡 Advice</h4>
+                            <ul id="futureSelfAdvice"></ul>
+                        </div>
+                    </div>
+                    <button onclick="refreshFutureSelf()" class="refresh-btn">🔄</button>
+                </div>
+            </div>
+            <div id="cognitiveLoadWidget" class="widget-card">
+                <div class="widget-header">🧠 Cognitive Load</div>
+                <div class="widget-content">
+                    <div class="cognitive-load-score" id="loadScore">--</div>
+                    <div class="cognitive-load-level" id="loadLevel">Analyzing...</div>
+                    <div class="cognitive-load-bar">
+                        <div class="cognitive-load-bar-fill" id="loadBarFill"></div>
+                    </div>
+                    <div class="cognitive-load-insights">
+                        <div class="insights-section">
+                            <h4>📊 Indicators</h4>
+                            <ul id="loadIndicators"></ul>
+                        </div>
+                        <div class="insights-section">
+                            <h4>💡 Suggestions</h4>
+                            <ul id="loadSuggestions"></ul>
+                        </div>
+                    </div>
+                    <button onclick="refreshCognitiveLoad()" class="refresh-btn">🔄</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="main-content">
+            <h2 class="thoughts-heading shadow-glow" style="margin-bottom: 16px; color: var(--primary); font-size: 1.4rem; font-weight: 600;">Add a New Thought</h2>
+            <div class="thought-form">
+                <input type="text" id="thoughtInput" class="input-field" placeholder="Enter your thought...">
+                <select id="categoryInput" class="input-field"></select>
+                <div class="priority-group" id="priorityGroup">
+                    <button type="button" class="priority-btn" data-value="urgent" onclick="setPriority('urgent')">Urgent</button>
+                    <button type="button" class="priority-btn" data-value="normal" onclick="setPriority('normal')">Normal</button>
+                    <button type="button" class="priority-btn" data-value="low" onclick="setPriority('low')">Low</button>
+                </div>
+                <input type="file" id="attachmentInput" multiple class="input-field">
+                <button class="btn-primary" onclick="addThought()">Add Thought</button>
+            </div>
+            
+            <div class="category-management">
+                <h2>Add a Category</h2>
+                <input type="text" id="newCategoryInput" class="input-field" placeholder="New category name">
+                <button class="btn-primary" onclick="addCategory()">Add Category</button>
+                <div id="categorySuccessMsg" style="display:none; color: var(--success); font-weight: 600; margin-top: 10px;">Category added!</div>
+            </div>
+            
+            <div class="search-bar" style="display: flex; gap: 12px; margin-bottom: 24px; align-items: center;">
+                <input type="text" id="searchInput" class="input-field" placeholder="Search thoughts..." style="flex: 2;">
+                <select id="searchCategory" class="input-field" style="flex: 1; min-width: 120px;"></select>
+                <select id="searchPriority" class="input-field" style="flex: 1; min-width: 120px;">
+                    <option value="">All Urgencies</option>
+                    <option value="urgent">Urgent</option>
+                    <option value="normal">Normal</option>
+                    <option value="low">Low</option>
+                </select>
+                <button class="btn-primary" onclick="applyFilters()">Search</button>
+            </div>
+            <div id="thoughtsList" class="thought-list"></div>
+        </div>
+        
+        <!-- Right Column: Learning Pathway + Pomodoro -->
+        <div class="side-column" id="rightColumn">
+            <div id="learningPathwayWidget" class="widget-card">
+                <div class="widget-header">🎯 Learning Pathway</div>
+                <div class="widget-content">
+                    <div class="learning-pathway-level" id="pathwayLevel">Analyzing...</div>
+                    <div class="learning-pathway-confidence" id="pathwayConfidence">--</div>
+                    <div class="learning-pathway-insights">
+                        <div class="insights-section">
+                            <h4>🚀 Recommended Skills</h4>
+                            <ul id="pathwaySkills"></ul>
+                        </div>
+                        <div class="insights-section">
+                            <h4>📚 Learning Path</h4>
+                            <ul id="pathwayPath"></ul>
+                        </div>
+                        <div class="insights-section">
+                            <h4>🎯 Next Steps</h4>
+                            <ul id="pathwaySteps"></ul>
+                        </div>
+                    </div>
+                    <button onclick="refreshLearningPathway()" class="refresh-btn">🔄</button>
+                </div>
+            </div>
+            <div id="pomodoroWidget" class="widget-card">
+                <div class="widget-header">⏰ Pomodoro Timer</div>
+                <div class="widget-content">
+                    <div class="pomodoro-timer" id="pomodoroTimer">25:00</div>
+                    <div class="pomodoro-controls">
+                        <button id="pomodoroStart" onclick="startPomodoro()">Start</button>
+                        <button id="pomodoroPause" onclick="pausePomodoro()">Pause</button>
+                        <button id="pomodoroReset" onclick="resetPomodoro()">Reset</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let editingId = null;
+        let editingContent = '';
+        let editingCategory = '';
+        let editingPriority = '';
+        let categoriesCache = [];
+        let selectedPriority = '';
+        let selectedEditPriority = '';
+        let selectedCategory = '';
+        let selectedEditCategory = '';
+
+        // Pomodoro Timer Logic
+        let pomodoroWork = 25 * 60;
+        let pomodoroBreak = 5 * 60;
+        let pomodoroTime = pomodoroWork;
+        let pomodoroMode = 'Work';
+        let pomodoroInterval = null;
+        let pomodoroRunning = false;
+
+        async function fetchCategories() {
+            const response = await fetch('/categories/');
+            const categories = await response.json();
+            categoriesCache = categories;
+            
+            // For add form
+            const categoryInput = document.getElementById('categoryInput');
+            categoryInput.innerHTML = '<option value="">Select Category</option>';
+            categories.forEach(cat => {
+                const opt = document.createElement('option');
+                opt.value = cat.name;
+                opt.textContent = cat.name;
+                categoryInput.appendChild(opt);
+            });
+            // For search filter
+            const searchCategory = document.getElementById('searchCategory');
+            if (searchCategory) {
+                searchCategory.innerHTML = '<option value="">All Categories</option>';
+                categories.forEach(cat => {
+                    const opt = document.createElement('option');
+                    opt.value = cat.name;
+                    opt.textContent = cat.name;
+                    searchCategory.appendChild(opt);
+                });
+            }
+            
+            // Update category management list
+            const categoryList = document.getElementById('categoryList');
+            categoryList.innerHTML = '';
+            categories.forEach(cat => {
+                const li = document.createElement('li');
+                li.innerHTML = `
+                    <span>${cat.name}</span>
+                    <button onclick="showRenameCategory('${cat.name}')" class="btn-primary" style="padding: 4px 8px; font-size: 0.8rem;">Rename</button>
+                    <button onclick="deleteCategory('${cat.name}')" class="btn-primary" style="padding: 4px 8px; font-size: 0.8rem; background: var(--error);">Delete</button>
+                    <span id="rename-${cat.name}" style="display:none;">
+                        <input type='text' id='renameInput-${cat.name}' value='${cat.name}' class="input-field" style="padding: 4px 8px; font-size: 0.8rem;">
+                        <button onclick="renameCategory('${cat.name}')" class="btn-primary" style="padding: 4px 8px; font-size: 0.8rem;">Save</button>
+                        <button onclick="hideRenameCategory('${cat.name}')" class="btn-primary" style="padding: 4px 8px; font-size: 0.8rem;">Cancel</button>
+                    </span>
+                `;
+                categoryList.appendChild(li);
+            });
+        }
+
+        function showRenameCategory(name) {
+            document.getElementById(`rename-${name}`).style.display = '';
+        }
+        function hideRenameCategory(name) {
+            document.getElementById(`rename-${name}`).style.display = 'none';
+        }
+
+        async function addCategory() {
+            const input = document.getElementById('newCategoryInput');
+            const name = input.value.trim();
+            if (!name) return;
+            await fetch('/categories/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name })
+            });
+            input.value = '';
+            fetchCategories();
+            document.getElementById('categorySuccessMsg').style.display = 'block';
+            setTimeout(() => {
+                document.getElementById('categorySuccessMsg').style.display = 'none';
+            }, 3000);
+        }
+
+        async function renameCategory(oldName) {
+            const newName = document.getElementById(`renameInput-${oldName}`).value.trim();
+            if (!newName || newName === oldName) return;
+            const formData = new FormData();
+            formData.append('new_name', newName);
+            await fetch(`/categories/${oldName}`, {
+                method: 'PUT',
+                body: formData
+            });
+            fetchCategories();
+        }
+
+        async function deleteCategory(name) {
+            await fetch(`/categories/${name}`, { method: 'DELETE' });
+            fetchCategories();
+        }
+
+        function capitalize(str) {
+            if (!str) return '';
+            return str.charAt(0).toUpperCase() + str.slice(1);
+        }
+
+        async function fetchThoughts(filters = {}) {
+            let url = '/thoughts/?';
+            const params = [];
+            if (filters.search) params.push(`search=${encodeURIComponent(filters.search)}`);
+            if (filters.category) params.push(`category=${encodeURIComponent(filters.category)}`);
+            if (filters.priority) params.push(`priority=${encodeURIComponent(filters.priority)}`);
+            url += params.join('&');
+            const response = await fetch(url);
+            const thoughts = await response.json();
+            const thoughtsList = document.getElementById('thoughtsList');
+            thoughtsList.innerHTML = '';
+            thoughts.forEach(thought => {
+                const thoughtDiv = document.createElement('div');
+                thoughtDiv.className = 'thought-card';
+                if (editingId === thought.id) {
+                    // Edit form
+                    thoughtDiv.innerHTML = `
+                        <input type="text" id="editContent" value="${editingContent}" class="input-field">
+                        <select id="editCategoryInput" class="input-field"></select>
+                        <div class="priority-group" id="editPriorityGroup">
+                            <button type="button" class="priority-btn" data-value="urgent" onclick="setEditPriority('urgent')">Urgent</button>
+                            <button type="button" class="priority-btn" data-value="normal" onclick="setEditPriority('normal')">Normal</button>
+                            <button type="button" class="priority-btn" data-value="low" onclick="setEditPriority('low')">Low</button>
+                        </div>
+                        <input type="file" id="editAttachmentInput" multiple class="input-field">
+                        <button onclick="saveEdit('${thought.id}')" class="btn-primary">Save</button>
+                        <button onclick="cancelEdit()" class="btn-primary">Cancel</button>
+                    `;
+                    // Set selected category and priority
+                    setTimeout(() => {
+                        const editCategoryInput = document.getElementById('editCategoryInput');
+                        editCategoryInput.innerHTML = '<option value="">Select Category</option>';
+                        categoriesCache.forEach(cat => {
+                            const opt = document.createElement('option');
+                            opt.value = cat.name;
+                            opt.textContent = cat.name;
+                            editCategoryInput.appendChild(opt);
+                        });
+                        editCategoryInput.value = thought.category || '';
+                        selectedEditCategory = thought.category || '';
+                        selectedEditPriority = thought.priority || '';
+                        setEditPriority(selectedEditPriority);
+                    }, 0);
+                } else {
+                    thoughtDiv.innerHTML = `
+                        <p><strong>${thought.content}</strong></p>
+                        <p>Category: ${thought.category || 'None'}</p>
+                        <p>Priority: ${thought.priority ? capitalize(thought.priority) : 'None'}</p>
+                        <p>Time: ${thought.timestamp || 'N/A'}</p>
+                        ${thought.attachments && thought.attachments.length ? `<div class='attachments'>${thought.attachments.map(url => (url.match(/\.(jpg|jpeg|png|gif)$/i) ? `<img src='${url}' style='max-width:100px;max-height:100px;margin:2px;'>` : `<a href='${url}' target='_blank'>${url.split('/').pop()}</a>`)).join('')}</div>` : ''}
+                        <button onclick="deleteThought('${thought.id}')" class="btn-primary" style="background: var(--error);">Delete</button>
+                        <span style="display:inline-block; width:16px;"></span>
+                        <button onclick="startEdit('${thought.id}', \`${thought.content.replace(/`/g, '\`')}\`, '${thought.category || ''}', '${thought.priority || ''}')" class="btn-primary">Edit</button>
+                    `;
+                }
+                thoughtsList.appendChild(thoughtDiv);
+            });
+        }
+
+        function applyFilters() {
+            const search = document.getElementById('searchInput').value;
+            const category = document.getElementById('searchCategory').value;
+            const priority = document.getElementById('searchPriority').value;
+            fetchThoughts({ search, category, priority });
+        }
+
+        function startEdit(id, content, category, priority) {
+            editingId = id;
+            editingContent = content;
+            selectedEditCategory = category;
+            selectedEditPriority = priority;
+            fetchThoughts();
+        }
+
+        function cancelEdit() {
+            editingId = null;
+            editingContent = '';
+            selectedEditCategory = '';
+            selectedEditPriority = '';
+            fetchThoughts();
+        }
+
+        async function saveEdit(id) {
+            const content = document.getElementById('editContent').value;
+            const category = document.getElementById('editCategoryInput').value;
+            const priority = selectedEditPriority;
+            const response = await fetch(`/thoughts/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id, content, category, priority })
+            });
+            const editAttachmentInput = document.getElementById('editAttachmentInput');
+            if (editAttachmentInput.files.length) {
+                await uploadAttachments(id, editAttachmentInput.files);
+            }
+            editAttachmentInput.value = '';
+            editingId = null;
+            editingContent = '';
+            selectedEditCategory = '';
+            selectedEditPriority = '';
+            applyFilters();
+            // Refresh cognitive load analysis
+            loadCognitiveLoad();
+            // Refresh learning pathway analysis
+            loadLearningPathway();
+        }
+
+        async function addThought() {
+            const thoughtInput = document.getElementById('thoughtInput');
+            const categoryInput = document.getElementById('categoryInput');
+            const attachmentInput = document.getElementById('attachmentInput');
+            const thought = {
+                content: thoughtInput.value,
+                category: categoryInput.value || null,
+                priority: selectedPriority || null
+            };
+            if (attachmentInput.files.length) {
+                const response = await fetch('/thoughts/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(thought)
+                });
+                const created = await response.json();
+                await uploadAttachments(created.id, attachmentInput.files);
+            } else {
+                await fetch('/thoughts/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(thought)
+                });
+            }
+            thoughtInput.value = '';
+            categoryInput.value = '';
+            selectedPriority = '';
+            attachmentInput.value = '';
+            document.querySelectorAll('#priorityGroup .priority-btn').forEach(btn => btn.classList.remove('active'));
+            applyFilters();
+            // Refresh cognitive load analysis
+            loadCognitiveLoad();
+            // Refresh learning pathway analysis
+            loadLearningPathway();
+        }
+
+        async function deleteThought(id) {
+            await fetch(`/thoughts/${id}`, { method: 'DELETE' });
+            applyFilters();
+            // Refresh cognitive load analysis
+            loadCognitiveLoad();
+            // Refresh learning pathway analysis
+            loadLearningPathway();
+        }
+
+        function setPriority(value) {
+            selectedPriority = value;
+            document.querySelectorAll('#priorityGroup .priority-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.value === value);
+            });
+        }
+
+        function setEditPriority(value) {
+            selectedEditPriority = value;
+            document.querySelectorAll('#editPriorityGroup .priority-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.value === value);
+            });
+        }
+
+        async function uploadAttachments(thoughtId, files) {
+            for (const file of files) {
+                const formData = new FormData();
+                formData.append('file', file);
+                await fetch(`/thoughts/${thoughtId}/attachments/`, {
+                    method: 'POST',
+                    body: formData
+                });
+            }
+        }
+
+        function updatePomodoroDisplay() {
+            const min = String(Math.floor(pomodoroTime / 60)).padStart(2, '0');
+            const sec = String(pomodoroTime % 60).padStart(2, '0');
+            document.getElementById('pomodoroTimer').textContent = `${min}:${sec}`;
+        }
+
+        function startPomodoro() {
+            if (pomodoroRunning) return;
+            pomodoroRunning = true;
+            pomodoroInterval = setInterval(() => {
+                if (pomodoroTime > 0) {
+                    pomodoroTime--;
+                    updatePomodoroDisplay();
+                } else {
+                    if (pomodoroMode === 'Work') {
+                        pomodoroMode = 'Break';
+                        pomodoroTime = pomodoroBreak;
+                    } else {
+                        pomodoroMode = 'Work';
+                        pomodoroTime = pomodoroWork;
+                    }
+                    updatePomodoroDisplay();
+                    // Optional: Add sound or alert here
+                }
+            }, 1000);
+        }
+
+        function pausePomodoro() {
+            pomodoroRunning = false;
+            clearInterval(pomodoroInterval);
+        }
+
+        function resetPomodoro() {
+            pausePomodoro();
+            pomodoroMode = 'Work';
+            pomodoroTime = pomodoroWork;
+            updatePomodoroDisplay();
+        }
+
+        // Initial load
+        fetchCategories();
+        applyFilters();
+
+        // Initialize display
+        updatePomodoroDisplay();
+        
+        // Load cognitive load analysis
+        loadCognitiveLoad();
+        
+        // Load learning pathway analysis
+        loadLearningPathway();
+        
+        // Load future self prediction
+        loadFutureSelf();
+        
+        async function loadCognitiveLoad() {
+            try {
+                const response = await fetch('/cognitive-load/');
+                const data = await response.json();
+                displayCognitiveLoad(data);
+            } catch (error) {
+                console.error('Error loading cognitive load:', error);
+                displayCognitiveLoadError();
+            }
+        }
+        
+        async function loadLearningPathway() {
+            try {
+                const response = await fetch('/learning-pathway/');
+                const data = await response.json();
+                displayLearningPathway(data);
+            } catch (error) {
+                console.error('Error loading learning pathway:', error);
+                displayLearningPathwayError();
+            }
+        }
+        
+        function displayCognitiveLoad(data) {
+            document.getElementById('loadScore').textContent = Math.round(data.score);
+            document.getElementById('loadLevel').textContent = data.level;
+            document.getElementById('loadLevel').className = `cognitive-load-level ${data.level}`;
+            const barFill = document.getElementById('loadBarFill');
+            barFill.style.width = `${data.score}%`;
+            const indicatorsList = document.getElementById('loadIndicators');
+            if (data.indicators && data.indicators.length > 0) {
+                indicatorsList.innerHTML = data.indicators.map(item => `<li>${item}</li>`).join('');
+            } else {
+                indicatorsList.innerHTML = '<li style="color: var(--text-secondary);font-style:italic;">No specific indicators detected</li>';
+            }
+            const suggestionsList = document.getElementById('loadSuggestions');
+            if (data.suggestions && data.suggestions.length > 0) {
+                suggestionsList.innerHTML = data.suggestions.map(item => `<li>${item}</li>`).join('');
+            } else {
+                suggestionsList.innerHTML = '<li style="color: var(--text-secondary);font-style:italic;">No specific suggestions at this time</li>';
+            }
+        }
+        
+        function displayCognitiveLoadError() {
+            document.getElementById('loadScore').textContent = '--';
+            document.getElementById('loadLevel').textContent = 'Error';
+            document.getElementById('loadLevel').className = 'cognitive-load-level error';
+            document.getElementById('loadBarFill').style.width = '0%';
+            
+            const indicatorsList = document.getElementById('loadIndicators');
+            indicatorsList.innerHTML = '<li style="color: var(--error);">Unable to load analysis</li>';
+            
+            const suggestionsList = document.getElementById('loadSuggestions');
+            suggestionsList.innerHTML = '<li style="color: var(--text-secondary);">Please try refreshing</li>';
+        }
+        
+        async function refreshCognitiveLoad() {
+            const refreshBtn = document.querySelector('#cognitiveLoadWidget .refresh-btn');
+            const originalText = refreshBtn.textContent;
+            refreshBtn.textContent = '🔄 Loading...';
+            refreshBtn.disabled = true;
+            
+            try {
+                await loadCognitiveLoad();
+            } catch (error) {
+                console.error('Error refreshing cognitive load:', error);
+                displayCognitiveLoadError();
+            } finally {
+                refreshBtn.textContent = originalText;
+                refreshBtn.disabled = false;
+            }
+        }
+        
+        function displayLearningPathway(data) {
+            document.getElementById('pathwayLevel').textContent = data.current_level;
+            document.getElementById('pathwayConfidence').textContent = `Confidence: ${Math.round(data.confidence_score)}%`;
+            const skillsList = document.getElementById('pathwaySkills');
+            if (data.recommended_skills && data.recommended_skills.length > 0) {
+                skillsList.innerHTML = data.recommended_skills.map(skill => `<li>${skill.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}</li>`).join('');
+            } else {
+                skillsList.innerHTML = '<li style="color: var(--text-secondary);font-style:italic;">No specific skills detected yet</li>';
+            }
+            const pathList = document.getElementById('pathwayPath');
+            if (data.learning_path && data.learning_path.length > 0) {
+                pathList.innerHTML = data.learning_path.map(path => `<li><strong>${path.skill}</strong> (${path.estimated_hours}h) - ${path.priority} priority</li>`).join('');
+            } else {
+                pathList.innerHTML = '<li style="color: var(--text-secondary);font-style:italic;">No learning path available yet</li>';
+            }
+            const stepsList = document.getElementById('pathwaySteps');
+            if (data.next_steps && data.next_steps.length > 0) {
+                stepsList.innerHTML = data.next_steps.map(item => `<li>${item}</li>`).join('');
+            } else {
+                stepsList.innerHTML = '<li style="color: var(--text-secondary);font-style:italic;">Start logging thoughts to get personalized recommendations</li>';
+            }
+        }
+        
+        function displayLearningPathwayError() {
+            document.getElementById('pathwayLevel').textContent = 'Error';
+            document.getElementById('pathwayConfidence').textContent = 'Unable to load';
+            
+            const skillsList = document.getElementById('pathwaySkills');
+            skillsList.innerHTML = '<li style="color: var(--error);">Unable to load analysis</li>';
+            
+            const pathList = document.getElementById('pathwayPath');
+            pathList.innerHTML = '<li style="color: var(--text-secondary);">Please try refreshing</li>';
+            
+            const stepsList = document.getElementById('pathwaySteps');
+            stepsList.innerHTML = '<li style="color: var(--text-secondary);">Check your connection</li>';
+        }
+        
+        async function refreshLearningPathway() {
+            const refreshBtn = document.querySelector('#learningPathwayWidget .refresh-btn');
+            const originalText = refreshBtn.textContent;
+            refreshBtn.textContent = '🔄 Loading...';
+            refreshBtn.disabled = true;
+            
+            try {
+                await loadLearningPathway();
+            } catch (error) {
+                console.error('Error refreshing learning pathway:', error);
+                displayLearningPathwayError();
+            } finally {
+                refreshBtn.textContent = originalText;
+                refreshBtn.disabled = false;
+            }
+        }
+        
+        async function loadFutureSelf() {
+            try {
+                const response = await fetch('/future-self/');
+                const data = await response.json();
+                displayFutureSelf(data);
+            } catch (error) {
+                console.error('Error loading future self:', error);
+                displayFutureSelfError();
+            }
+        }
+        
+        function displayFutureSelf(data) {
+            document.getElementById('futureSelfSummary').textContent = data.summary;
+            document.getElementById('futureSelfHorizon').textContent = `Time Horizon: ${data.time_horizon}`;
+            const trendsList = document.getElementById('futureSelfTrends');
+            if (data.predicted_trends && data.predicted_trends.length > 0) {
+                trendsList.innerHTML = data.predicted_trends.map(item => `<li>${item}</li>`).join('');
+            } else {
+                trendsList.innerHTML = '<li style="color: var(--text-secondary);font-style:italic;">No trends detected yet</li>';
+            }
+            const risksList = document.getElementById('futureSelfRisks');
+            if (data.risk_factors && data.risk_factors.length > 0) {
+                risksList.innerHTML = data.risk_factors.map(item => `<li>${item}</li>`).join('');
+            } else {
+                risksList.innerHTML = '<li style="color: var(--text-secondary);font-style:italic;">No risks detected</li>';
+            }
+            const positivesList = document.getElementById('futureSelfPositives');
+            if (data.positive_outcomes && data.positive_outcomes.length > 0) {
+                positivesList.innerHTML = data.positive_outcomes.map(item => `<li>${item}</li>`).join('');
+            } else {
+                positivesList.innerHTML = '<li style="color: var(--text-secondary);font-style:italic;">No positive outcomes detected</li>';
+            }
+            const adviceList = document.getElementById('futureSelfAdvice');
+            if (data.advice && data.advice.length > 0) {
+                adviceList.innerHTML = data.advice.map(item => `<li>${item}</li>`).join('');
+            } else {
+                adviceList.innerHTML = '<li style="color: var(--text-secondary);font-style:italic;">No advice at this time</li>';
+            }
+        }
+        
+        function displayFutureSelfError() {
+            document.getElementById('futureSelfSummary').textContent = 'Error';
+            document.getElementById('futureSelfHorizon').textContent = '';
+            document.getElementById('futureSelfTrends').innerHTML = '<li style="color: var(--error);">Unable to load analysis</li>';
+            document.getElementById('futureSelfRisks').innerHTML = '<li style="color: var(--text-secondary);">Please try refreshing</li>';
+            document.getElementById('futureSelfPositives').innerHTML = '<li style="color: var(--text-secondary);">Check your connection</li>';
+            document.getElementById('futureSelfAdvice').innerHTML = '<li style="color: var(--text-secondary);">Check your connection</li>';
+        }
+        
+        async function refreshFutureSelf() {
+            const refreshBtn = document.querySelector('#futureSelfWidget .refresh-btn');
+            const originalText = refreshBtn.textContent;
+            refreshBtn.textContent = '🔄 Loading...';
+            refreshBtn.disabled = true;
+            try {
+                await loadFutureSelf();
+            } catch (error) {
+                console.error('Error refreshing future self:', error);
+                displayFutureSelfError();
+            } finally {
+                refreshBtn.textContent = originalText;
+                refreshBtn.disabled = false;
+            }
+        }
+        
+        // Refresh future self prediction when thoughts change
+        function refreshAllInsights() {
+            loadCognitiveLoad();
+            loadLearningPathway();
+            loadFutureSelf();
+        }
+
+        // Create floating particles
+        function createParticles() {
+            const container = document.getElementById('particlesContainer');
+            const particleCount = 50; // Increased from 30 for more visibility
+            
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                
+                // Randomize position across the entire screen
+                particle.style.left = Math.random() * 100 + 'vw';
+                particle.style.top = Math.random() * 100 + 'vh';
+                
+                // Randomize animation duration for varied movement speeds
+                const duration = 20 + Math.random() * 40; // 20-60 seconds
+                particle.style.animationDuration = duration + 's';
+                
+                // Randomize animation delay so they don't all start at the same time
+                particle.style.animationDelay = Math.random() * 10 + 's';
+                
+                container.appendChild(particle);
+            }
+        }
+
+        // Breathing meditation effect
+        function startBreathingEffect() {
+            // The breathing effect is now handled by CSS background animations
+            // No need to add animation to main content
+            console.log('Breathing meditation effect active');
+        }
+
+        // Initialize particles and breathing effect
+        document.addEventListener('DOMContentLoaded', function() {
+            createParticles();
+            startBreathingEffect();
+            // Live search/filter events
+            const searchInput = document.getElementById('searchInput');
+            const searchCategory = document.getElementById('searchCategory');
+            const searchPriority = document.getElementById('searchPriority');
+            if (searchInput) searchInput.addEventListener('input', applyFilters);
+            if (searchCategory) searchCategory.addEventListener('change', applyFilters);
+            if (searchPriority) searchPriority.addEventListener('change', applyFilters);
+            // Recreate particles periodically for continuous flow
+            setInterval(() => {
+                const container = document.getElementById('particlesContainer');
+                const particles = container.querySelectorAll('.particle');
+                // Remove some particles randomly to keep the count manageable
+                particles.forEach(particle => {
+                    if (Math.random() < 0.1) { // 10% chance to remove each particle
+                        particle.remove();
+                    }
+                });
+                // Add new particles if needed
+                if (particles.length < 30) {
+                    const newParticle = document.createElement('div');
+                    newParticle.className = 'particle';
+                    newParticle.style.left = Math.random() * 100 + 'vw';
+                    newParticle.style.top = Math.random() * 100 + 'vh';
+                    newParticle.style.animationDelay = '0s';
+                    newParticle.style.animationDuration = (20 + Math.random() * 40) + 's';
+                    container.appendChild(newParticle);
+                }
+            }, 5000); // Check every 5 seconds
+        });
+    </script>
+</body>
+</html>
